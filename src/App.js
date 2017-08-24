@@ -10,27 +10,48 @@ class BooksApp extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
-      books: []
+      books: {
+        byId: {},
+        byShelf: {
+          "currentlyReading": [],
+          "wantToRead": [],
+          "read": []
+        }
+      }
     };
   }
 
   componentDidMount() {
-    BooksAPI.getAll().then(books => this.setState({books}));
+    BooksAPI.getAll().then(books => {
+      const store = books.reduce((store, book) => {
+        store.byId[book.id] = book;
+        if (store.byShelf.hasOwnProperty(book.shelf)) {
+          store.byShelf[book.shelf].push(book.id);
+        } else {
+          store.byShelf[book.shelf] = [book.id];
+        }
+        return store;
+      }, {byId: {}, byShelf: {}});
+      return {
+        books: store
+      };
+    }).then(state => this.setState(state));
   }
 
   update = (book, shelf) => {
     BooksAPI.update(book, shelf).then(shelves => {
       this.setState((prevState, props) => ({
         ...prevState,
-        books: prevState.books.map(b => {
-          if (b.id !== book.id) {
-            return b;
-          }
-          return {
-            ...b,
-            shelf
-          };
-        })
+        books: {
+          byId: {
+            ...prevState.books.byId,
+            [book.id]: {
+              ...prevState.books.byId[book.id],
+              shelf
+            }
+          },
+          byShelf: shelves
+        }
       }));
     });
   }

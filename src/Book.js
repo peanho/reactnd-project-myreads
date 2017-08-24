@@ -39,7 +39,7 @@ class Book extends Component {
         </div>
         <div className="book-title">{title}</div>
         {authors &&
-          <div className="book-authors">{authors.join(' and ')}</div>
+          <div className="book-authors">{authors.join(", ")}</div>
         }
       </div>
     )

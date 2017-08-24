@@ -10,11 +10,6 @@ import './App.css';
 
 class BookSearch extends Component {
 
-  static propTypes = {
-    books: PropTypes.array.isRequired,
-    onUpdate: PropTypes.func.isRequired
-  }
-
   state = {
     query: '',
     results: []
@@ -29,11 +24,8 @@ class BookSearch extends Component {
       this.setState({query});
       query.length && BooksAPI.search(query, 10)
         .then(results =>
-          results.map(result =>
-            this.props.books.find(book =>
-              book.id === result.id) || {...result, shelf: 'none'}
-            )
-          )
+          results.map(book => this.props.books.byId[book.id] || book)
+        )
         .then(results => this.setState({results}));
     }
   }

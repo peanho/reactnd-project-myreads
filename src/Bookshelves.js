@@ -6,8 +6,9 @@ import './App.css';
 
 class Bookshelves extends Component {
 
-  static propTypes = {
-    books: PropTypes.array.isRequired
+  filterByShelf = shelf => {
+    return this.props.books.byShelf[shelf]
+      .map(bookId => this.props.books.byId[bookId]);
   }
 
   render() {
@@ -19,13 +20,13 @@ class Bookshelves extends Component {
         <div className="list-books-content">
           <div>
             <Bookshelf title="Currently Reading"
-              books={this.props.books.filter(book => book.shelf === 'currentlyReading')}
+              books={this.filterByShelf('currentlyReading')}
               onUpdate={this.props.onUpdate} />
             <Bookshelf title="Want to Read"
-              books={this.props.books.filter(book => book.shelf === 'wantToRead')}
+              books={this.filterByShelf('wantToRead')}
               onUpdate={this.props.onUpdate} />
             <Bookshelf title="Read"
-              books={this.props.books.filter(book => book.shelf === 'read')}
+              books={this.filterByShelf('read')}
               onUpdate={this.props.onUpdate} />
 
           </div>
