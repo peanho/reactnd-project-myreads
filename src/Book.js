@@ -1,34 +1,35 @@
 import React, { Component } from 'react';
-import PropTypes from 'prop-types';
+// import PropTypes from 'prop-types';
 
 class Book extends Component {
-  static propTypes = {
-    title: PropTypes.string.isRequired,
-    imageLinks: PropTypes.objectOf(PropTypes.string),
-    authors: PropTypes.arrayOf(PropTypes.string),
-    shelf: PropTypes.string,
-    onUpdate: PropTypes.func
-  }
 
-  static defaultProps = {
-    shelf: 'none'
-  }
-
-
-  handleChange = (event) => {
-    this.props.onUpdate({id: this.props.id}, event.target.value);
+  handleChange = event => {
+    const shelf = event.target.value;
+    const book = this.props.item;
+    const prevShelf = book.shelf;
+    if (shelf === 'none') { // remove book from shelf
+      this.props.onUpdate({ type: 'REMOVE', book, shelf });
+    } else if (prevShelf === 'none') {
+      this.props.onUpdate({ type: 'ADD', book, shelf });
+    } else {
+      this.props.onUpdate({ type: 'MOVE', book, shelf });
+    }
   }
 
   render() {
-    const {imageLinks, title, authors, shelf} = this.props;
+    const { item } = this.props;
+    const { title, imageLinks, authors, shelf } = item;
+    const style = {
+      width: 128,
+      height: 193,
+      backgroundImage: `url(${imageLinks.thumbnail})`
+    };
     return (
       <div className="book">
         <div className="book-top">
-          <div className="book-cover" style={{
-            width: 128, height: 193,
-            backgroundImage: `url(${imageLinks.thumbnail})`}} />
+          <div className="book-cover" style={style} />
           <div className="book-shelf-changer">
-            <select value={shelf} onChange={this.handleChange} >
+            <select defaultValue={shelf} onChange={this.handleChange} >
               <option value="none" disabled>Move to...</option>
               <option value="currentlyReading">Currently Reading</option>
               <option value="wantToRead">Want to Read</option>
@@ -39,7 +40,7 @@ class Book extends Component {
         </div>
         <div className="book-title">{title}</div>
         {authors &&
-          <div className="book-authors">{authors.join(' and ')}</div>
+          <div className="book-authors">{authors.join(", ")}</div>
         }
       </div>
     )

@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import { Link } from 'react-router-dom';
 import { Debounce } from 'react-throttle';
-import PropTypes from 'prop-types';
+// import PropTypes from 'prop-types';
 import * as BooksAPI from './BooksAPI';
 import Book from './Book';
 import './App.css';
@@ -10,14 +10,9 @@ import './App.css';
 
 class BookSearch extends Component {
 
-  static propTypes = {
-    books: PropTypes.array.isRequired,
-    onUpdate: PropTypes.func.isRequired
-  }
-
   state = {
     query: '',
-    results: []
+    books: []
   }
 
   /*
@@ -27,15 +22,19 @@ class BookSearch extends Component {
     const query = event.target.value || '';
     if (this.state.query !== query) {
       this.setState({query});
-      query.length && BooksAPI.search(query, 10)
-        .then(results =>
-          results.map(result =>
-            this.props.books.find(book =>
-              book.id === result.id) || {...result, shelf: 'none'}
-            )
-          )
-        .then(results => this.setState({results}));
+      query.length && this.search(query);
     }
+  }
+
+  search = term => {
+    BooksAPI.search(term)
+      .then(books => {
+        return books.map( book => this.props.books[book.id] || {
+          ...book,
+          shelf: 'none'
+        });
+      })
+      .then(books => this.setState( { books } ));
   }
 
   render() {
@@ -53,17 +52,19 @@ class BookSearch extends Component {
               you don't find a specific author or title. Every search is limited by search terms.
             */}
             <Debounce time="500" handler="onChange">
-              <input type="text" placeholder="Search by title or author"
-                onChange={this.handleChange}/>
+              <input type="text"
+                placeholder="Search by title or author"
+                onChange={this.handleChange}
+              />
             </Debounce>
 
           </div>
         </div>
         <div className="search-books-results">
           <ol className="books-grid">
-            {this.state.results.length > 0 && this.state.results.map(result => (
-              <li key={result.id}>
-                <Book {...result} onUpdate={this.props.onUpdate} />
+            {this.state.books.length > 0 && this.state.books.map(it => (
+              <li key={it.id}>
+                <Book item={it} onUpdate={this.props.onUpdate} />
               </li>)
             )}
           </ol>
