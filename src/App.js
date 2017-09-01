@@ -3,7 +3,12 @@ import { Route } from 'react-router-dom';
 import Bookshelves from './Bookshelves';
 import BookSearch from './BookSearch';
 import * as BooksAPI from './BooksAPI';
-import './App.css'
+import {
+  ADD_BOOK_TO_SHELF,
+  REMOVE_BOOK_FROM_SHELF,
+  MOVE_BOOK_BETWEEN_SHELVES
+} from './actions';
+import './App.css';
 
 /**
  * A fixed shelves object since the API doesn't return
@@ -24,36 +29,34 @@ const shelves = {
   allIds: ['currentlyReading', 'wantToRead', 'read']
 };
 
-const store = (state = { booksOnShelves: [] }, action) => {
+const books = (state = [], action) => {
   switch (action.type) {
-    case 'REMOVE':
-      return {
-        booksOnShelves: state.booksOnShelves.filter(it => it.id !== action.book.id)
-      };
-    case 'ADD':
-      return {
-        booksOnShelves: state.booksOnShelves.concat({
+    case REMOVE_BOOK_FROM_SHELF:
+      return state.filter(it => it.id !== action.book.id);
+    case ADD_BOOK_TO_SHELF:
+      return state.concat({
           ...action.book,
           shelf: action.shelf
-        })
-      };
-    case 'MOVE':
-      return {
-        booksOnShelves: state.booksOnShelves.map(book => {
-          if (book.id !== action.book.id) {
-            return book;
-          } else {
-            return {
-              ...action.book,
-              shelf: action.shelf
-            };
-          }
-        })
-      };
+        });
+    case MOVE_BOOK_BETWEEN_SHELVES:
+      return state.map(book => {
+        if (book.id !== action.book.id) {
+          return book;
+        } else {
+          return {
+            ...action.book,
+            shelf: action.shelf
+          };
+        }
+      });
     default:
       return state;
   }
 }
+
+const store = (state = { booksOnShelves: [] }, action) => ({
+  booksOnShelves: books(state.booksOnShelves, action)
+});
 
 const mapStateToShelves = shelves => state => shelves.allIds.map(shelf => (
   {

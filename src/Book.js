@@ -1,18 +1,24 @@
 import React, { Component } from 'react';
+import {
+  addBookToShelf,
+  removeBookFromShelf,
+  moveBookBetweenShelves
+} from './actions';
 // import PropTypes from 'prop-types';
 
 class Book extends Component {
 
   handleChange = event => {
     const shelf = event.target.value;
-    const book = this.props.item;
-    const prevShelf = book.shelf;
+    const { item: book, onUpdate } = this.props;
+    const { prevShelf = 'none' } = book;
     if (shelf === 'none') { // remove book from shelf
-      this.props.onUpdate({ type: 'REMOVE', book, shelf });
-    } else if (prevShelf === 'none') {
-      this.props.onUpdate({ type: 'ADD', book, shelf });
-    } else {
-      this.props.onUpdate({ type: 'MOVE', book, shelf });
+      onUpdate(removeBookFromShelf(book, shelf));
+    } else if (prevShelf === 'none') { // add book to shelf
+      debugger;
+      onUpdate(addBookToShelf(book, shelf));
+    } else { // move book from one shelf to another
+      onUpdate(moveBookBetweenShelves(book, shelf));
     }
   }
 
