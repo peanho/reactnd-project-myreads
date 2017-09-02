@@ -3,62 +3,72 @@ import { Route } from 'react-router-dom';
 import Bookshelves from './Bookshelves';
 import BookSearch from './BookSearch';
 import * as BooksAPI from './BooksAPI';
-import './App.css'
+import {
+  ADD_BOOK_TO_SHELF,
+  REMOVE_BOOK_FROM_SHELF,
+  MOVE_BOOK_BETWEEN_SHELVES
+} from './actions';
+import './App.css';
 
 /**
- * A fixed shelves object since the API doesn't return
+ * A fixed set of shelves since the API doesn't return
  * the shelves titles.
  */
 const shelves = {
   byId: {
     currentlyReading: {
-      title: 'Currently Reading'
+      title: 'Currently Reading',
+      whenEmptyMsg: "Time to start reading a book..."
     },
     wantToRead: {
-      title: 'Want to Read'
+      title: 'Want to Read',
+      whenEmptyMsg: "Go search for a book to read!"
     },
     read: {
-      title: 'Read'
+      title: 'Read',
+      whenEmptyMsg: "Let's finish one at least."
     }
   },
   allIds: ['currentlyReading', 'wantToRead', 'read']
 };
 
-const store = (state = { booksOnShelves: [] }, action) => {
+/**
+ * A reducer shamelessly inspired by the article:
+ * "You Might Not Need Redux" from Dan Abramov.
+ */
+const books = (state = [], action) => {
   switch (action.type) {
-    case 'REMOVE':
-      return {
-        booksOnShelves: state.booksOnShelves.filter(it => it.id !== action.book.id)
-      };
-    case 'ADD':
-      return {
-        booksOnShelves: state.booksOnShelves.concat({
+    case REMOVE_BOOK_FROM_SHELF:
+      return state.filter(it => it.id !== action.book.id);
+    case ADD_BOOK_TO_SHELF:
+      return state.concat({
           ...action.book,
           shelf: action.shelf
-        })
-      };
-    case 'MOVE':
-      return {
-        booksOnShelves: state.booksOnShelves.map(book => {
-          if (book.id !== action.book.id) {
-            return book;
-          } else {
-            return {
-              ...action.book,
-              shelf: action.shelf
-            };
-          }
-        })
-      };
+        });
+    case MOVE_BOOK_BETWEEN_SHELVES:
+      return state.map(book => {
+        if (book.id !== action.book.id) {
+          return book;
+        } else {
+          return {
+            ...action.book,
+            shelf: action.shelf
+          };
+        }
+      });
     default:
       return state;
   }
 }
 
+const store = (state = { booksOnShelves: [] }, action) => ({
+  booksOnShelves: books(state.booksOnShelves, action)
+});
+
 const mapStateToShelves = shelves => state => shelves.allIds.map(shelf => (
   {
     id: shelf,
-    title: shelves.byId[shelf].title,
+    ...shelves.byId[shelf],
     books: state.booksOnShelves.filter(book => book.shelf === shelf)
   }
 ));
@@ -75,9 +85,6 @@ class BooksApp extends React.Component {
     this.state = { booksOnShelves: [] };
   }
 
-  /**
-   * TODO: handle response error
-   */
   componentDidMount() {
     BooksAPI.getAll()
       .then(books => ({ booksOnShelves: books }))

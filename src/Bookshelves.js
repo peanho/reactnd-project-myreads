@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-// import PropTypes from 'prop-types';
+import PropTypes from 'prop-types';
 import Bookshelf from './Bookshelf';
 import './App.css';
 
@@ -16,6 +16,7 @@ function Bookshelves({ shelves, onUpdate }) {
             <Bookshelf
               key={shelf.id}
               title={shelf.title}
+              whenEmptyMsg={shelf.whenEmptyMsg}
               books={shelf.books}
               onUpdate={onUpdate}
             />
@@ -28,5 +29,15 @@ function Bookshelves({ shelves, onUpdate }) {
     </div>
   );
 }
+
+Bookshelves.propTypes = {
+  shelves: PropTypes.arrayOf(PropTypes.shape({
+    id: PropTypes.string.isRequired,
+    title: PropTypes.string.isRequired,
+    whenEmptyMsg: PropTypes.string,
+    books: PropTypes.array.isRequired
+  })).isRequired,
+  onUpdate: PropTypes.func.isRequired
+};
 
 export default Bookshelves;
