@@ -8,11 +8,27 @@ import './App.css';
 
 
 
+const update = (state = [], props) => {
+  return state.map(book => props.books[book.id] || {
+    ...book,
+    shelf: 'none'
+  });
+};
+
+
 class BookSearch extends Component {
 
   state = {
     query: '',
     books: []
+  }
+
+  componentWillReceiveProps(nextProps) {
+    if (this.props !== nextProps) {
+      this.setState({
+        books: update(this.state.books, nextProps)
+      });
+    }
   }
 
   /*
@@ -28,12 +44,7 @@ class BookSearch extends Component {
 
   search = term => {
     BooksAPI.search(term)
-      .then(books => {
-        return books.map( book => this.props.books[book.id] || {
-          ...book,
-          shelf: 'none'
-        });
-      })
+      .then(books => update(books, this.props))
       .then(books => this.setState( { books } ));
   }
 
@@ -52,7 +63,7 @@ class BookSearch extends Component {
               you don't find a specific author or title. Every search is limited by search terms.
             */}
             <Debounce time="500" handler="onChange">
-              <input type="text"
+              <input type="text" autoFocus
                 placeholder="Search by title or author"
                 onChange={this.handleChange}
               />

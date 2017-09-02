@@ -1,21 +1,31 @@
 import React, { Component } from 'react';
+import PropTypes from 'prop-types';
 import {
   addBookToShelf,
   removeBookFromShelf,
   moveBookBetweenShelves
 } from './actions';
-// import PropTypes from 'prop-types';
 
 class Book extends Component {
+
+  static propTypes = {
+    item: PropTypes.shape({
+      title: PropTypes.string.isRequired,
+      imageLinks: PropTypes.shape({
+        thumbnail: PropTypes.string.isRequired
+      }),
+      authors: PropTypes.arrayOf(PropTypes.string)
+    }).isRequired,
+    onUpdate: PropTypes.func.isRequired
+  }
 
   handleChange = event => {
     const shelf = event.target.value;
     const { item: book, onUpdate } = this.props;
-    const { prevShelf = 'none' } = book;
+    const { shelf: prevShelf = 'none' } = book;
     if (shelf === 'none') { // remove book from shelf
       onUpdate(removeBookFromShelf(book, shelf));
     } else if (prevShelf === 'none') { // add book to shelf
-      debugger;
       onUpdate(addBookToShelf(book, shelf));
     } else { // move book from one shelf to another
       onUpdate(moveBookBetweenShelves(book, shelf));
@@ -35,7 +45,10 @@ class Book extends Component {
         <div className="book-top">
           <div className="book-cover" style={style} />
           <div className="book-shelf-changer">
-            <select defaultValue={shelf} onChange={this.handleChange} >
+            <select
+              defaultValue={shelf}
+              onChange={this.handleChange}
+            >
               <option value="none" disabled>Move to...</option>
               <option value="currentlyReading">Currently Reading</option>
               <option value="wantToRead">Want to Read</option>

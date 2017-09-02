@@ -161,6 +161,10 @@ body, .app {
   cursor: pointer;
 }
 
+.book-shelf-changer--loading select {
+  cursor: wait;
+}
+
 /* book cover */
 
 .book-cover {

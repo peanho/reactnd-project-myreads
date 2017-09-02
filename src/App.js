@@ -11,24 +11,31 @@ import {
 import './App.css';
 
 /**
- * A fixed shelves object since the API doesn't return
+ * A fixed set of shelves since the API doesn't return
  * the shelves titles.
  */
 const shelves = {
   byId: {
     currentlyReading: {
-      title: 'Currently Reading'
+      title: 'Currently Reading',
+      whenEmptyMsg: "Time to start reading a book..."
     },
     wantToRead: {
-      title: 'Want to Read'
+      title: 'Want to Read',
+      whenEmptyMsg: "Go search for a book to read!"
     },
     read: {
-      title: 'Read'
+      title: 'Read',
+      whenEmptyMsg: "Let's finish one at least."
     }
   },
   allIds: ['currentlyReading', 'wantToRead', 'read']
 };
 
+/**
+ * A reducer shamelessly inspired by the article:
+ * "You Might Not Need Redux" from Dan Abramov.
+ */
 const books = (state = [], action) => {
   switch (action.type) {
     case REMOVE_BOOK_FROM_SHELF:
@@ -61,7 +68,7 @@ const store = (state = { booksOnShelves: [] }, action) => ({
 const mapStateToShelves = shelves => state => shelves.allIds.map(shelf => (
   {
     id: shelf,
-    title: shelves.byId[shelf].title,
+    ...shelves.byId[shelf],
     books: state.booksOnShelves.filter(book => book.shelf === shelf)
   }
 ));
@@ -78,9 +85,6 @@ class BooksApp extends React.Component {
     this.state = { booksOnShelves: [] };
   }
 
-  /**
-   * TODO: handle response error
-   */
   componentDidMount() {
     BooksAPI.getAll()
       .then(books => ({ booksOnShelves: books }))
